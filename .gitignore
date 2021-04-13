@@ -11,6 +11,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# npm tree dependencies
+package-lock.json
+
 # OS
 .DS_Store
 
@@ -33,3 +36,6 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.env
+.prod.env
+.stag.env

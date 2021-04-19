@@ -2,6 +2,9 @@
 /dist
 /node_modules
 
+# Mongo Local via Docker
+mongo_data
+
 # Logs
 logs
 *.log

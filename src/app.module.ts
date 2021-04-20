@@ -6,7 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
-import { envFilePath } from './enviroments';
+import { envFilePath } from './environments';
+import { DatabaseModule } from './database/database.module';
 import config from './config';
 
 const configModule = ConfigModule.forRoot({
@@ -21,7 +22,7 @@ const configModule = ConfigModule.forRoot({
 });
 
 @Module({
-  imports: [configModule, HttpModule, UsersModule],
+  imports: [configModule, HttpModule, UsersModule, DatabaseModule],
   controllers: [AppController],
   providers: [AppService],
 })

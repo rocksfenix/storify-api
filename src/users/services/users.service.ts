@@ -1,21 +1,40 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto } from 'src/users/dtos/users.dto';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  FilterUsersDto,
+} from 'src/users/dtos/users.dto';
 import { User } from 'src/users/entities/user.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class UsersService {
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
   private users: User[] = [];
 
-  getAll(limit: number, offset: number) {
+  async getAll(params?: FilterUsersDto) {
+    const { limit = 20, offset = 0 } = params;
+
+    const [total, users] = await Promise.all([
+      this.userModel.countDocuments(),
+      this.userModel
+        .find()
+        .skip(offset * limit)
+        .limit(limit)
+        .exec(),
+    ]);
+
     return {
       limit,
       offset,
-      users: this.users,
+      total,
+      users,
     };
   }
 
-  getById(id: string) {
-    const user = this.users.find((_user: User) => _user.id === id);
+  async getById(id: string) {
+    const user = await this.userModel.findById(id);
 
     if (!user) {
       throw new NotFoundException(`User not found: ${id}`);
@@ -26,35 +45,36 @@ export class UsersService {
     };
   }
 
-  create(user: CreateUserDto) {
-    const id = Math.random().toString(16).substring(2);
-    const newUser = {
-      ...user,
-      id,
-    };
-
-    this.users.push(newUser);
-
+  async create(user: CreateUserDto) {
+    const newUser = await this.userModel.create(user);
     return newUser;
   }
 
-  update(id: string, user: UpdateUserDto) {
-    this.users = this.users.map((_user: User) => {
-      if (_user.id === id) {
-        return {
-          ..._user,
-          ...user,
-        };
-      }
-      return _user;
+  async update(id: string, user: UpdateUserDto) {
+    let userData = await this.userModel.findById(id);
+
+    if (!userData) {
+      throw new NotFoundException('User not exist');
+    }
+
+    userData = await this.userModel.findOneAndUpdate({ _id: id }, user, {
+      new: true,
     });
-    return this.users.find((_user: User) => _user.id === id);
+
+    return userData;
   }
 
-  delete(id: string) {
-    this.users = this.users.filter((_user: User) => _user.id !== id);
+  async delete(id: string) {
+    const userData = await this.userModel.findById(id);
+
+    if (!userData) {
+      throw new NotFoundException('User not exist');
+    }
+
+    await userData.remove();
+
     return {
-      message: `User was deletes succesfully: ${id}`,
+      message: `User was deleted: ${id}`,
     };
   }
 }

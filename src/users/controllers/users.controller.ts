@@ -11,8 +11,13 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { CreateUserDto, UpdateUserDto } from 'src/users/dtos/users.dto';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  FilterUsersDto,
+} from 'src/users/dtos/users.dto';
 import { UsersService } from '../services/users.service';
+import { MongoIdPipe } from '../../common/pipes/mongo-id.pipe';
 
 @ApiTags('Users')
 @Controller('users')
@@ -22,8 +27,8 @@ export class UsersController {
   @Get()
   @ApiOperation({ summary: 'List of users' })
   @HttpCode(HttpStatus.ACCEPTED)
-  getAll(@Query('limit') limit = 20, @Query('offset') offset = 0) {
-    return this.userService.getAll(limit, offset);
+  getAll(@Query() params?: FilterUsersDto) {
+    return this.userService.getAll(params);
   }
 
   @Post()
@@ -34,19 +39,22 @@ export class UsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get single user by id' })
-  getById(@Param('id') id: string) {
+  getById(@Param('id', MongoIdPipe) id: string) {
     return this.userService.getById(id);
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Update single user by id' })
-  update(@Param('id') id: string, @Body('user') user: UpdateUserDto) {
+  update(
+    @Param('id', MongoIdPipe) id: string,
+    @Body('user') user: UpdateUserDto,
+  ) {
     return this.userService.update(id, user);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete single user by id' })
-  delete(@Param('id') id: string) {
+  delete(@Param('id', MongoIdPipe) id: string) {
     return this.userService.delete(id);
   }
 }

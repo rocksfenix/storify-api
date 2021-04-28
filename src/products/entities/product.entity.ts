@@ -1,4 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
+import { string } from 'joi';
 import * as mongoose from 'mongoose';
 import { User } from '../../users/entities/user.entity';
 
@@ -13,7 +14,7 @@ export class Product extends mongoose.Document {
   @Prop()
   description: string;
 
-  @Prop()
+  @Prop({ type: Number, index: true })
   price: number;
 
   @Prop({ required: true })
@@ -21,6 +22,17 @@ export class Product extends mongoose.Document {
 
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   seller: User;
+
+  // @Prop(raw({
+  //   title: {
+  //     type: string,
+  //   },
+  //   image: {
+  //     type: string,
+  //   } 
+  // })),
+  // category: Record<string, any>
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
+ProductSchema.index({ price: 1, stock: -1 })

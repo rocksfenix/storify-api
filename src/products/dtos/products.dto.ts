@@ -10,7 +10,7 @@ import {
 
 import { PartialType } from '@nestjs/swagger';
 import { User } from 'src/users/entities/user.entity';
-
+import { Category } from 'src/categories/entities/category.entity';
 
 export class CreateProductDto {
   @IsString() @IsNotEmpty() readonly title: string;
@@ -18,6 +18,7 @@ export class CreateProductDto {
   @IsNotEmpty() @IsPositive() readonly price: number;
   @IsNotEmpty() @Min(0) readonly stock: number;
   @IsOptional() @IsMongoId() readonly seller: User;
+  @IsOptional() @IsMongoId() readonly category: Category;
 }
 
 export class UpdateProductDto extends PartialType(CreateProductDto) {}

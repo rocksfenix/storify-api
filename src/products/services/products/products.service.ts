@@ -29,6 +29,7 @@ export class ProductsService {
         .find(filters)
         .skip(offset * limit)
         .limit(limit)
+        .populate('category')
         .exec(),
     ]);
 

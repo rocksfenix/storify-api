@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
 import { string } from 'joi';
 import * as mongoose from 'mongoose';
 import { User } from '../../users/entities/user.entity';
+import { Category } from 'src/categories/entities/category.entity';
 
 @Schema()
 export class Product extends mongoose.Document {
@@ -23,15 +24,8 @@ export class Product extends mongoose.Document {
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   seller: User;
 
-  // @Prop(raw({
-  //   title: {
-  //     type: string,
-  //   },
-  //   image: {
-  //     type: string,
-  //   } 
-  // })),
-  // category: Record<string, any>
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Category' })
+  category: Category | mongoose.Types.ObjectId;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

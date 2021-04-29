@@ -42,7 +42,9 @@ export class ProductsService {
   }
 
   async getById(id: string) {
-    const user = await this.productModel.findById(id);
+    const user = await this.productModel
+      .findById(id)
+      .populate('category');
 
     if (!user) {
       throw new NotFoundException(`User not found: ${id}`);

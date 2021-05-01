@@ -10,6 +10,7 @@ import { envFilePath } from './environments';
 import { DatabaseModule } from './database/database.module';
 import { ProductsModule } from './products/products.module';
 import { CategoriesModule } from './categories/categories.module';
+import { OrdersModule } from './orders/orders.module';
 import config from './config';
 
 const configModule = ConfigModule.forRoot({
@@ -24,7 +25,7 @@ const configModule = ConfigModule.forRoot({
 });
 
 @Module({
-  imports: [configModule, HttpModule, UsersModule, DatabaseModule, ProductsModule, CategoriesModule],
+  imports: [configModule, HttpModule, UsersModule, DatabaseModule, ProductsModule, CategoriesModule, OrdersModule],
   controllers: [AppController],
   providers: [AppService],
 })

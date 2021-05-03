@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
-import { UpdateCategoryDto } from 'src/categories/dtos/categories.dto';
-import { CreateOrderDto, FilterOrderDto } from '../dtos/orders.dto';
+import { CreateOrderDto, FilterOrderDto, UpdateOrderDto } from '../dtos/orders.dto';
 import { Order } from '../entities/order.entity';
 
 @Injectable()
@@ -62,7 +61,7 @@ export class OrdersService {
     return newOrder;
   }
 
-  async update(id: string, order: UpdateCategoryDto) {
+  async update(id: string, order: UpdateOrderDto) {
     let data = await this.orderModel.findById(id);
 
     if (!data) {

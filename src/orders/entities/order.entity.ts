@@ -8,6 +8,13 @@ export class Order extends mongoose.Document {
   @Prop()
   createdAt: Date;
 
+  @Prop({
+    type: String,
+    default: 'PENDING',
+    enum: ['PENDING', 'IN PROGRESS', 'COMPLETED'],
+  })
+  status: string;
+
   @Prop()
   total: number;
 
@@ -21,16 +28,19 @@ export class Order extends mongoose.Document {
   @Prop({
     required: true,
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
   })
   seller: User;
 
   @Prop({
-    required: true,
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product'
+    type: [
+      {
+        quantity: { type: Number },
+        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      },
+    ],
   })
-  products: Product[];
+  products: { quantity: number; product: Product }[];
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { CreateOrderDto, FilterOrderDto, UpdateOrderDto } from '../dtos/orders.dto';
@@ -23,7 +23,12 @@ export class OrdersService {
         .find(filters)
         .skip(offset * limit)
         .limit(limit)
-        .populate('category')
+        .populate('seller')
+        .populate('buyer')
+        .populate({
+          path: 'products.product',
+          model: 'Product'
+        })
         .exec(),
     ]);
 
@@ -40,7 +45,10 @@ export class OrdersService {
       .findById(id)
       .populate('seller')
       .populate('buyer')
-      .populate('orders');
+      .populate({
+        path: 'products.product',
+        model: 'Product'
+      })
 
     if (!user) {
       throw new NotFoundException(`Order not found: ${id}`);
@@ -52,11 +60,27 @@ export class OrdersService {
   }
 
   async create(order: CreateOrderDto) {
+
+    if (!order.products.length) {
+      throw new BadRequestException('You not have been added any products')
+    }
+
+    const total = order.products.reduce((prev, next) => {
+      console.log('prev', prev)
+      if (typeof next === 'object') {
+        return prev + next.product.price * next.quantity
+      }
+      return prev + next
+    }, 0)
+
     const newOrder = await this.orderModel.create({
       ...order,
+      // products: order.products.map(p => p._id),
       seller: '618c75d5895df75d10500966',
       // TODO: Was taken from de JWT
       buyer: '618c75d5895df75d10500966',
+      createdAt: Date.now(),
+      total,
     });
     return newOrder;
   }

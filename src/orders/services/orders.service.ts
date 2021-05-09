@@ -1,7 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
-import { CreateOrderDto, FilterOrderDto, UpdateOrderDto } from '../dtos/orders.dto';
+import {
+  CreateOrderDto,
+  FilterOrderDto,
+  UpdateOrderDto,
+} from '../dtos/orders.dto';
 import { Order } from '../entities/order.entity';
 
 @Injectable()
@@ -17,7 +25,7 @@ export class OrdersService {
       filters.price = { $gte: minTotal, $lte: maxTotal };
     }
 
-    const [total, users] = await Promise.all([
+    const [total, orders] = await Promise.all([
       this.orderModel.countDocuments(),
       this.orderModel
         .find(filters)
@@ -27,7 +35,7 @@ export class OrdersService {
         .populate('buyer')
         .populate({
           path: 'products.product',
-          model: 'Product'
+          model: 'Product',
         })
         .exec(),
     ]);
@@ -36,42 +44,41 @@ export class OrdersService {
       limit,
       offset,
       total,
-      users,
+      orders,
     };
   }
 
   async getById(id: string) {
-    const user = await this.orderModel
+    const order = await this.orderModel
       .findById(id)
       .populate('seller')
       .populate('buyer')
       .populate({
         path: 'products.product',
-        model: 'Product'
-      })
+        model: 'Product',
+      });
 
-    if (!user) {
+    if (!order) {
       throw new NotFoundException(`Order not found: ${id}`);
     }
 
     return {
-      user,
+      order,
     };
   }
 
   async create(order: CreateOrderDto) {
-
     if (!order.products.length) {
-      throw new BadRequestException('You not have been added any products')
+      throw new BadRequestException('You not have been added any products');
     }
 
     const total = order.products.reduce((prev, next) => {
-      console.log('prev', prev)
+      console.log('prev', prev);
       if (typeof next === 'object') {
-        return prev + next.product.price * next.quantity
+        return prev + next.product.price * next.quantity;
       }
-      return prev + next
-    }, 0)
+      return prev + next;
+    }, 0);
 
     const newOrder = await this.orderModel.create({
       ...order,
@@ -92,15 +99,29 @@ export class OrdersService {
       throw new NotFoundException('Order not exist');
     }
 
-    data = await this.orderModel.findOneAndUpdate(
+    data = await this.orderModel.findOneAndUpdate({ _id: id }, order, {
+      new: true,
+    });
+
+    return data;
+  }
+
+  async removeProduct(id: string, productId: string) {
+    let order = await this.orderModel.findById(id);
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    order = await this.orderModel.findOneAndUpdate(
       { _id: id },
-      order,
+      { $pull: { products: { product: { _id: productId } } } },
       {
         new: true,
       },
     );
 
-    return data;
+    return order;
   }
 
   async delete(id: string) {
